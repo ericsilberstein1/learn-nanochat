@@ -29,9 +29,11 @@ cargo run
 ```
 
 #### Challenge 2.2
+Rust version of the python toy code from tokenzier.ipynb 
 
 ```
-cargo new toy_tokenizer_rust
+cd toy_tokenizer_rust
+cargo run
 ```
 
 #### Challlenge 2.3
