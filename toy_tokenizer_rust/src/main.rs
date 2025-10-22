@@ -102,7 +102,6 @@ fn main() {
     }
 
     let mut tokens: HashSet<String> = HashSet::new();
-
     for word in &words {
         for c in word {
             tokens.insert(c.to_string());
@@ -118,18 +117,8 @@ fn main() {
     tokens.insert("<unk>".to_string());
     tokens.insert(" ".to_string());
 
-    println!("--words--");
-    for word in &words {
-        println!("------");
-        for c in word {
-            println!("{}", c);
-        }
-    }
-
-    println!("--tokens--");
-    for token in &tokens {
-        println!("{}", token);
-    }
+    println!("words: {:?}\n", words);
+    println!("tokens: {:?}\n", tokens);
 
     let token_to_id: HashMap<&String, usize> = tokens.iter() // should this be String not &String ?
         .enumerate()
@@ -140,19 +129,19 @@ fn main() {
         .map(|(token, id)| (*id, *token))
         .collect();
 
-    println!("token_to_id: {:?}", token_to_id);
-    let mut sorted: Vec<_> = id_to_token.iter().collect();
-    sorted.sort_by_key(|(id, _)| *id);
-    println!("id_to_token: {:?}", sorted);
+    println!("token_to_id: {:?}\n", token_to_id);
 
-    let foo: Vec<usize> = encode_word(&token_to_id, "the");
-    println!("foo is {:?}", foo);
+    let mut sorted_id_to_token: Vec<_> = id_to_token.iter().collect();
+    sorted_id_to_token.sort_by_key(|(id, _)| *id);
+    println!("id_to_token: {:?}\n", sorted_id_to_token);
 
-    let bar = encode(&token_to_id, "The cat found the hat.");
-    println!("bar is {:?}", bar);
+    println!("word 'the' encoded: {:?}\n", encode_word(&token_to_id, "the"));
+    println!("word 'cat' encoded: {:?}\n", encode_word(&token_to_id, "cat"));
 
-    println!("it is {}", decode(&id_to_token, &bar));
+    let sentence = "The cat found the hat.";
+    println!("sentence '{}' encoded: {:?}\n", sentence, encode(&token_to_id, sentence));
 
-    println!("{}", decode(&id_to_token, &encode(&token_to_id, "The cat found the hat.")));
-    println!("{}", decode(&id_to_token, &encode(&token_to_id, "The zebra lost the hat.")));
+    println!("sentence '{}' encoded and decoded: {}\n", sentence, decode(&id_to_token, &encode(&token_to_id, sentence)));
+    let sentence = "The zebra lost the hat.";
+    println!("sentence '{}' encoded and decoded: {}\n", sentence, decode(&id_to_token, &encode(&token_to_id, sentence)));
 }
