@@ -1,6 +1,8 @@
 use std::collections::HashSet;
 use std::collections::HashMap;
 
+type Words = Vec<Vec<String>>; // e.g. [["T", "h", "e"], ["c", "a", "t"]] or [["Th", "e"], ["c", "at"]]
+
 #[derive(PartialEq, Eq, Hash, Debug)]
 struct Pair {
     first: String,
@@ -13,7 +15,7 @@ impl Pair {
     }
 }
 
-fn generate_pairs(words: &Vec<Vec<String>>) -> HashMap<Pair, u32> {
+fn generate_pairs(words: &Words) -> HashMap<Pair, u32> {
     let mut pairs: HashMap<Pair, u32> = HashMap::new();
     
     for word in words {
@@ -39,7 +41,7 @@ fn find_top_pair(pairs: &HashMap<Pair, u32>) -> &Pair {
     return candidate_pair.unwrap();
 }
 
-fn update_words_with_new_token(words: &mut Vec<Vec<String>>, new_pair: &Pair, new_token: &str) {
+fn update_words_with_new_token(words: &mut Words, new_pair: &Pair, new_token: &str) {
     for word in words.iter_mut() {
         let mut i: usize = 0;
         while i < word.len() - 1 {
@@ -94,7 +96,7 @@ fn decode(id_to_token: &HashMap<usize, &String>, encoded_sentence: &Vec<usize>) 
 fn main() {
     let corpus = "The batat and the cat fought over the hat.";
 
-    let mut words: Vec<Vec<String>> = vec![];
+    let mut words: Words = vec![];
     for word in corpus.split(' ') {
         words.push(word.chars().map(|c| c.to_string()).collect());
     }
