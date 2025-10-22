@@ -1,0 +1,6 @@
+[package]
+name = "challenge-04-play-parallel-rust"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]

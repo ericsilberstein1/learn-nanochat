@@ -1,5 +1,5 @@
 [package]
-name = "hello_world_rust"
+name = "challenge-03-play-tokenizer-rust"
 version = "0.1.0"
 edition = "2024"
 

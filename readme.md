@@ -13,20 +13,17 @@ uv run jupyter lab
 ```
 
 #### Challenge 2
-I've never used Rust before. Get familiar with it by before trying to reimplement a performant tokenzier similart to the one in the nanogpt repo.
-
-#### Challenge 2.1
-Hello world in Rust.
+I've never used Rust before. Get familiar with it by before trying to reimplement a performant tokenzier similart to the one in the nanogpt repo. Start with hello world.
 
 ```
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-cargo new challenge-02.1-hello-world-rust
-cd challenge-02.1-hello-world-rust
+cargo new challenge-02-hello-world-rust
+cd challenge-02-hello-world-rust
 cargo run
 ```
 
-#### Challenge 2.2
-Rust version of the python toy code from tokenzier.ipynb. Doing this in `challenge-02.2-play-tokenizer-rust`.
+#### Challenge 3
+Rust version of the python toy code from tokenzier.ipynb.
 
 ```
 cargo run
@@ -34,10 +31,10 @@ cargo run
 
 Got this working and then made the code into what is hopefully more idiomatic Rust.
 
+#### Challlenge 4
+Write something that does something in parallel, example using map / reduce.
+
 ## Next challenges
 
-#### Challlenge 2.3
-Write something that runs in parallel, example using map / reduce.
-
-#### Challenge 2.4
+#### Challenge
 Call Rust code from Python.
