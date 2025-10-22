@@ -1,3 +1,5 @@
+// Rust version of play tokenzier like ../tokenizer.ipynb
+
 use std::collections::HashSet;
 use std::collections::HashMap;
 
@@ -39,14 +41,14 @@ fn find_top_pair(pairs: &HashMap<Pair, u32>) -> &Pair {
     candidate_pair.unwrap()
 }
 
-fn update_words_with_new_token(words: &mut Words, new_pair: &Pair, new_token: &str) {
+fn update_words_with_new_token(words: &mut Words, new_pair: &Pair) {
     for word in words.iter_mut() {
         let mut i: usize = 0;
         while i < word.len() - 1 {
             if (Pair{first: word[i].clone(), second: word[i+1].clone()}) == *new_pair { // ??? why do I need that clone?
                 let mut new_word = vec![];
                 new_word.extend_from_slice(&word[..i]);
-                new_word.push(new_token.to_string());
+                new_word.push(new_pair.to_token());
                 new_word.extend_from_slice(&word[i+2..]);
                 *word = new_word;
             }
@@ -109,7 +111,7 @@ fn main() {
     while tokens.len() < N_TOKENS {
         let pairs = generate_pairs(&words);
         let pair = find_top_pair(&pairs);
-        update_words_with_new_token(&mut words, &pair, &pair.to_token());
+        update_words_with_new_token(&mut words, &pair);
         tokens.insert(pair.to_token());
     }
     tokens.insert("<unk>".to_string());
