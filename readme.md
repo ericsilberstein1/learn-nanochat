@@ -1,7 +1,7 @@
 
 2025-Oct-20
 
-I heard about [NanoGPT](https://github.com/karpathy/nanoGPT) and watched this [podcast](https://www.youtube.com/watch?v=lXUZvyajciY) with Andrej Karpathy. He suggests learning by rewriting all the code without any copy and paste.
+I heard about [nanochat](https://github.com/karpathy/nanochat) and watched this [podcast](https://www.youtube.com/watch?v=lXUZvyajciY) with Andrej Karpathy. He suggests learning by rewriting all the code without any copy and paste.
 
 I started to look at the tokenizer. I found [this](https://huggingface.co/learn/llm-course/en/chapter6/5) intro to byte-pair encoding tokenization on Hugging Face and read enough to get the idea.
 
