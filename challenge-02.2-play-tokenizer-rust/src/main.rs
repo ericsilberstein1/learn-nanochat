@@ -1,4 +1,4 @@
-// Rust version of play tokenzier like ../tokenizer.ipynb
+// Rust version of play tokenzier like ../challenge-01-play-tokenizer/tokenizer.ipynb
 
 use std::collections::HashSet;
 use std::collections::HashMap;
