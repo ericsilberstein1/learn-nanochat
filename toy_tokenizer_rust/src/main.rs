@@ -25,7 +25,7 @@ fn generate_pairs(words: &Words) -> HashMap<Pair, u32> {
             *count += 1;
         }
     }
-    return pairs;
+    pairs
 }
 
 // make more idiomatic with .max_by_key() ?
@@ -38,7 +38,7 @@ fn find_top_pair(pairs: &HashMap<Pair, u32>) -> &Pair {
             candidate_pair = Some(pair);
         }
     }
-    return candidate_pair.unwrap();
+    candidate_pair.unwrap()
 }
 
 fn update_words_with_new_token(words: &mut Words, new_pair: &Pair, new_token: &str) {
@@ -76,7 +76,7 @@ fn encode_word(token_to_id: &HashMap<&String, usize>, word: &str) -> Vec<usize> 
         encoded.push(token_id.unwrap());
         unencoded_part = unencoded_part.chars().skip(i+1).collect();
     }
-    return encoded;
+    encoded
 }
 
 fn encode(token_to_id: &HashMap<&String, usize>, sentence: &str) -> Vec<usize> {
@@ -86,11 +86,11 @@ fn encode(token_to_id: &HashMap<&String, usize>, sentence: &str) -> Vec<usize> {
         encoded.push(token_to_id[&" ".to_string()]);
     }
     encoded.pop();
-    return encoded;
+    encoded
 }
 
 fn decode(id_to_token: &HashMap<usize, &String>, encoded_sentence: &Vec<usize>) -> String {
-    return encoded_sentence.iter().map(|id| id_to_token[id].as_str()).collect();
+    encoded_sentence.iter().map(|id| id_to_token[id].as_str()).collect()
 }
 
 fn main() {
@@ -155,6 +155,4 @@ fn main() {
 
     println!("{}", decode(&id_to_token, &encode(&token_to_id, "The cat found the hat.")));
     println!("{}", decode(&id_to_token, &encode(&token_to_id, "The zebra lost the hat.")));
-
-
 }
