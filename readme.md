@@ -44,3 +44,9 @@ See note at top of `call-rust-functions.ipynb` for how to build. (Don't use `car
 Now looking a bit more carefully at [scripts/tok_train.py](https://github.com/karpathy/nanochat/blob/master/scripts/tok_train.py) and [nanochat/tokenizer.py](https://github.com/karpathy/nanochat/blob/master/nanochat/tokenizer.py) in the nanochat repo I see that there are two tokenizer implementatins. One uses a combination of his [rustbpe](https://github.com/karpathy/nanochat/tree/master/rustbpe) and [tiktoken from openai](https://github.com/openai/tiktoken) and the other HuggingFace Tokenizer. There's also a lot more going on than in my toy versions.
 
 Create a tiktoken object using hardcoded (not learned) tokens and use it to encode and decode text.
+
+#### Challenge 7
+Make a simplified version of tokenizer.py and rustbpe. I should be able to have a notebook that instantiates a tokenizer, gives it some text to train on, it in turn calls a rust library to do the actual training, and once trained, I can encode and decode. It should also be possible to save and load the tokenizer to disk.
+
+This is similar to challenge 1 but it should be byte-level and scalable so I can then train on large amounts of text.
+
