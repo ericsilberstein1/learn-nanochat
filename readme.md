@@ -51,3 +51,6 @@ Make a simplified version of tokenizer.py and rustbpe. I should be able to have 
 This is similar to challenge 1 but it should be byte-level and scalable so I can then train on large amounts of text.
 
 See note at top of `tokenize.ipynb` for how to build the rust part. (Don't use `cargo build`.)
+
+### Challenge 8
+Download some of the actual text used to train the tokenizer and model, look at it, and then train the tokenizer from challenge 7 on it.

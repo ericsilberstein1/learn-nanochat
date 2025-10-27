@@ -51,3 +51,7 @@ ENV/
 
 # uv (Python package manager)
 .uv/
+
+# models and data
+*.parquet
+*.pkl
