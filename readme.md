@@ -55,6 +55,10 @@ See note at top of `tokenize.ipynb` for how to build the rust part. (Don't use `
 #### Challenge 8
 Download some of the actual text used to train the tokenizer and model, look at it, and then train the tokenizer from challenge 7 on it.
 
+#### Challenge 9
+Understand shape / contents of x and y in `x, y = next(trainLoader)`
+
+Why? There is no way I can just start "copying" all the pre-training and model code without understanding it better first. After skimming `gpt.py`, `base_train.py`, and `dataloader.py`, I'm thinking it's better to understand the model first and then get to training. A potential starting point is to recreate enough of the model code to make sure I understand every line of `forward()`. However, a baby step even before that is to recreate enough of the dataloader so I understand exactly what x and y are in `x, y = next(train_loader)`. I assume x will be ~ a tensor with sequence length tokens by batch size starting with `<bos>` and y will be the same thing starting one token over and ending one token later.
 
 #### Future potential challenges
 * Evaluate the tokenizer similar to `scripts/tok_eval.py`.
