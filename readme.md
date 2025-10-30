@@ -60,5 +60,16 @@ Understand shape / contents of x and y in `x, y = next(trainLoader)`
 
 Why? There is no way I can just start "copying" all the pre-training and model code without understanding it better first. After skimming `gpt.py`, `base_train.py`, and `dataloader.py`, I'm thinking it's better to understand the model first and then get to training. A potential starting point is to recreate enough of the model code to make sure I understand every line of `forward()`. However, a baby step even before that is to recreate enough of the dataloader so I understand exactly what x and y are in `x, y = next(train_loader)`. I assume x will be ~ a tensor with sequence length tokens by batch size starting with `<bos>` and y will be the same thing starting one token over and ending one token later.
 
-#### Future potential challenges
+#### Challenge 10
+Create the model skeleton in a notebook and go through each step of the forward pass. Do this with tiny dimensions and a tiny x and y so I can see and follow the intermediate tensors.
+
+#### Future potential challenges and/or things to look up
 * Evaluate the tokenizer similar to `scripts/tok_eval.py`.
+
+* Understand the KV cache including how much compute is saved by it
+
+* Why do we apply rotary embeddings to q and k but not v? What if we applied it only to one? Or all three?
+
+* Why is bias=False for the linear transforms in GPT?
+
+* Why is the type of cos / sin bfloat16?

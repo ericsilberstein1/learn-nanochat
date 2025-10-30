@@ -4,6 +4,7 @@ version = "0.1.0"
 description = ""
 dependencies = [
     "jupyter>=1.1.1",
+    "matplotlib>=3.10.7",
     "numpy>=2.2.6",
     "pyarrow>=22.0.0",
     "tiktoken>=0.12.0",
