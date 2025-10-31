@@ -55,3 +55,4 @@ ENV/
 # models and data
 *.parquet
 *.pkl
+*.pth

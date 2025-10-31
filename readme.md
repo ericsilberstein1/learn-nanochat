@@ -69,6 +69,9 @@ Understand the weight initialization code and copy it to `my_gpt.py`. Goal is to
 #### Challenge 12
 Understand the setup optimizers code and copy it to `my_gpt.py`. Still moving toward having enough in place to pretrain the model.
 
+#### Challenge 13
+Leaving out nearly as much as possible from `base_train.py`, try to train a depth 4 (?) model on my macbook.
+
 #### Future potential challenges and/or things to look up
 * Evaluate the tokenizer similar to `scripts/tok_eval.py`.
 
@@ -83,3 +86,7 @@ Understand the setup optimizers code and copy it to `my_gpt.py`. Still moving to
 * Make sure I understand why we init many layers to zero
 
 * Replace my wholesale copy of muon.py with one I hand copied and understand
+
+* Understand meta init
+
+* With AdamW, for example, why do we still modify the LR in the training loop?

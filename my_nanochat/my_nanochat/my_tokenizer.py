@@ -67,6 +67,8 @@ class MyTokenizer:
     def get_bos_token_id(self):
         return self.encode_special('<bos>') # TODO he decided it was worth it to hold onto it, maybe change to that?
 
+    def get_vocab_size(self):
+        return self.enc.n_vocab
 
 def get_tokenizer():
     return MyTokenizer.load_from_file(os.path.join(get_base_dir(), 'my-tokenizer.pkl'))
