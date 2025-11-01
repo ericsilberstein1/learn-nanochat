@@ -75,7 +75,7 @@ Leaving out nearly as much as possible from `base_train.py`, try to train a dept
 #### Challenge 14
 Train the baby model from challenge 13 on a single GPU. The point of this is to get an environment set up to work with a GPU and to make sure device is set/used properly in the code so far. I'll still need to add in validation, metrics, and checkpointing before scaling up.
 
-#### Future potential challenges and/or things to look up
+#### Future potential challenges and/or things to look up and/or todo
 * Evaluate the tokenizer similar to `scripts/tok_eval.py`.
 
 * Understand the KV cache including how much compute is saved by it
@@ -95,3 +95,5 @@ Train the baby model from challenge 13 on a single GPU. The point of this is to 
 * With AdamW, for example, why do we still modify the LR in the training loop?
 
 * How do positional embeddings really work? Why do they work? What if you leave them out? What if you put them only before the first layer?
+
+* After challenge 14, add autodetect_device_type() so the same notebooks will work on cpu and gpu going forward
