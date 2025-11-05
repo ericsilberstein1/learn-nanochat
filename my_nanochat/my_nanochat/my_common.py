@@ -22,3 +22,8 @@ def autodetect_device_type():
         device_type = "cpu"
     print(f"Autodetected device type: {device_type}")
     return device_type
+
+def memory_stats():
+    free, _ = torch.cuda.mem_get_info()
+    allocated = torch.cuda.memory_allocated()
+    return f"Torch memory allocated: {allocated / 1024**3:.2f} GiB (free = {free / 1024**3:.2f} GiB)"
