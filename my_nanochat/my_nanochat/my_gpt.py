@@ -31,6 +31,38 @@ def apply_rottary_embed(x, cos, sin):
     out = out.to(x.dtype)
     return out
 
+# NOT USED, HERE ONLY FOR EXPLORTATION IN CHALLENGE 15
+def scaled_dot_product_attention(query, key, value, attn_mask=None, dropout_p=0.0,
+		is_causal=False, scale=None, enable_gqa=False) -> torch.Tensor:
+	L, S = query.size(-2), key.size(-2)
+	scale_factor = 1 / math.sqrt(query.size(-1)) if scale is None else scale
+	attn_bias = torch.zeros(L, S, dtype=query.dtype, device=query.device)
+	if is_causal:
+		assert attn_mask is None
+		temp_mask = torch.ones(L, S, dtype=torch.bool, device=query.device).tril(diagonal=0)
+		attn_bias.masked_fill_(temp_mask.logical_not(), float("-inf"))
+
+	if attn_mask is not None:
+		if attn_mask.dtype == torch.bool:
+			attn_bias.masked_fill_(attn_mask.logical_not(), float("-inf"))
+		else:
+			attn_bias = attn_mask + attn_bias
+
+	if enable_gqa:
+		key = key.repeat_interleave(query.size(-3)//key.size(-3), -3)
+		value = value.repeat_interleave(query.size(-3)//value.size(-3), -3)
+
+	log_memory_stats("before SDPA query @ ...", {}, 3)
+	attn_weight = query @ key.transpose(-2, -1) * scale_factor
+	log_memory_stats("after SDPA query @ ...", {'attn_weight': attn_weight}, 3)
+	attn_weight += attn_bias
+	attn_weight = torch.softmax(attn_weight, dim=-1)
+	attn_weight = torch.dropout(attn_weight, dropout_p, train=True)
+	log_memory_stats("before SDPA computing attn_weight @ value", {}, 3)
+	result = attn_weight @ value
+	log_memory_stats("after SDPA computing attn_weight @ value", {'result': result}, 3)
+	return result
+
 class CausalSelfAttention(nn.Module):
     def __init__(self, config, layer_idx):
         super().__init__()
@@ -52,14 +84,21 @@ class CausalSelfAttention(nn.Module):
         B, T, C = x.size()
 
         q = self.c_q(x).view(B, T, self.n_head, self.head_dim)
+        log_memory_stats("after ATTN c_q(x)", {'q': q}, 2)
         k = self.c_k(x).view(B, T, self.n_kv_head, self.head_dim)
+        log_memory_stats("after ATTN c_k(x)", {'k': k}, 2)
         v = self.c_v(x).view(B, T, self.n_kv_head, self.head_dim)
+        log_memory_stats("after ATTN c_v(x)", {'v': v}, 2)
 
         cos, sin = cos_sin
         q = apply_rottary_embed(q, cos, sin)
+        log_memory_stats("after ATTN apply_rottary_embed(q, cos, sin)", {'resulting q': q}, 2)
         k = apply_rottary_embed(k, cos, sin)
+        log_memory_stats("after ATTN apply_rottary_embed(k, cos, sin)", {'resulting k': k}, 2)
         q = norm(q)
+        log_memory_stats("after ATTN norm(q)", {'resulting q': q}, 2)
         k = norm(k)
+        log_memory_stats("after ATTN norm(k)", {'resulting k': k}, 2)
 
         q, k, v = q.transpose(2,1), k.transpose(2,1), v.transpose(2,1) # (B,T,H,D) -> (B,H,T,D)
 
@@ -70,8 +109,10 @@ class CausalSelfAttention(nn.Module):
         enable_gqa = self.n_head != self.n_kv_head # always false for now
 
         y = F.scaled_dot_product_attention(q, k, v, is_causal=True, enable_gqa=enable_gqa)
+        log_memory_stats("after ATTN scaled_dot_product_attention", {'y': y}, 2)
         y = y.transpose(1,2).contiguous().view(B, T, -1)
         y = self.c_proj(y)
+        log_memory_stats("after ATTN c_proj(y)", {'resulting y': y}, 2)
         return y
 
 class MLP(nn.Module):
@@ -81,13 +122,13 @@ class MLP(nn.Module):
         self.c_proj = nn.Linear(4 * config.n_embd, config.n_embd, bias=False)
     
     def forward(self, x):
-        log_memory_stats("start of MLP forward", {'input x': x}, 1)
+        log_memory_stats("start of MLP forward", {'input x': x}, 2)
         x = self.c_fc(x)
-        log_memory_stats("after MLP c_fc", {'resulting x': x}, 1)
+        log_memory_stats("after MLP c_fc", {'resulting x': x}, 2)
         x = F.relu(x).square()
-        log_memory_stats("after MLP F.relu(x).square()", {'resulting x': x}, 1)
+        log_memory_stats("after MLP F.relu(x).square()", {'resulting x': x}, 2)
         x = self.c_proj(x)
-        log_memory_stats("after MLP c_proj", {'resulting x': x}, 1)
+        log_memory_stats("after MLP c_proj", {'resulting x': x}, 2)
         return x
 
 class Block(nn.Module):
@@ -98,7 +139,9 @@ class Block(nn.Module):
 
     def forward(self, x, cos_sin, kv_cache):
         x = x + self.attn(norm(x), cos_sin, kv_cache)
+        log_memory_stats("after BLOCK x + attn(norm(x))", {'resulting x': x}, 1)
         x = x + self.mlp(norm(x))
+        log_memory_stats("after BLOCK x + mlp(norm(x))", {'resulting x': x}, 1)
         return x
 
 class GPT(nn.Module):
@@ -223,7 +266,7 @@ class GPT(nn.Module):
         log_memory_stats("after lm_head", {'logits': logits})
         softcap = 15
         logits = softcap * torch.tanh(logits / softcap)
-        log_memory_stats("after tanh(logits / softcap)", {'logits': logits})
+        log_memory_stats("after softcap * tanh(logits / softcap)", {'logits': logits})
         if targets is not None:
             logits = logits.float()
             log_memory_stats("after logits.float()", {'logits': logits})

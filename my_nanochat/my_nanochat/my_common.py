@@ -34,5 +34,5 @@ def log_memory_stats(message, relevant_tensors = {}, indentation = 0):
     memory_allocated_on_previous_log = allocated
     print(f"{' ' * indentation}{message} - now allocated: {allocated / 1024**3:.3f} GiB, delta: {delta / 1024**2:.3f} MiB")
     for name, tensor in relevant_tensors.items():
-        print(f"{' ' * indentation} {name} - {list(tensor.shape)} - {tensor.dtype} - {tensor.untyped_storage().nbytes() / 1024**2:.3f} MiB")
+        print(f"{' ' * indentation}> {name} - {list(tensor.shape)} - {tensor.dtype} - {tensor.untyped_storage().nbytes() / 1024**2:.3f} MiB")
 
