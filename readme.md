@@ -78,6 +78,9 @@ Train the baby model from challenge 13 on a single GPU. The point of this is to 
 #### Challenge 15
 Sticking with GPU for a bit, understand how to calculate the GPU memory needed for the model.
 
+#### Challenge 16
+Do a tiny example of back propagation by hand. This is to build intuition for what additional memory gets allocated during back prop which came up in challenge 15.
+
 #### Future potential challenges, things to look up, questions, and todo 
 * Evaluate the tokenizer similar to `scripts/tok_eval.py`.
 
