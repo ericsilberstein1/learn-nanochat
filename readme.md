@@ -81,6 +81,9 @@ Sticking with GPU for a bit, understand how to calculate the GPU memory needed f
 #### Challenge 16
 Do a tiny example of back propagation by hand. This is to build intuition for what additional memory gets allocated during back prop which came up in challenge 15.
 
+#### Challenge 17
+Create `scripts/my_base_train.py` by copying much of `base_train.py`. This should include the code from the baby training in previous challenges, code to pass config options on the command line, and code to save checkpoints. The idea is get organized before adding evaluations and scaling up training.
+
 #### Future potential challenges, things to look up, questions, and todo 
 * Evaluate the tokenizer similar to `scripts/tok_eval.py`.
 
