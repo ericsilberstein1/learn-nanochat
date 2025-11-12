@@ -64,7 +64,7 @@ class CausalSelfAttention(nn.Module):
 
         # apply KV cache: insert current k,v into cache and get the full view so far
         if kv_cache is not None:
-            k, v = kv_cache.insert(self.layer_idx, k, v)
+            k, v = kv_cache.insert_kv(self.layer_idx, k, v)
         Tq = q.size(2) # number of queries in this forward pass (I think will usually be 1)
         Tk = k.size(2) # number of keys/values in total (in the cache + in this forward pass)
 
