@@ -1,6 +1,8 @@
 import os
 import torch
 import torch.distributed as dist
+from filelock import FileLock
+import urllib.request
 
 def print0(s, **kwargs):
     ddp_rank = int(os.environ.get('RANK', 0))
@@ -63,6 +65,36 @@ def compute_init(device_type="cuda"):
 def compute_cleanup():
     if is_ddp():
         dist.destroy_process_group()
+
+def download_file_with_lock(url, filename, postprocess_fn=None):
+    
+    # only a single rank will download and call postprocess_fn
+
+    base_dir = get_base_dir()
+    file_path = os.path.join(base_dir, filename)
+    lock_path = file_path + ".lock"
+
+    if os.path.exists(file_path):
+        return file_path
+    
+    with FileLock(lock_path):
+        # only a single rank can acquire this lock, all others block until released
+
+        if os.path.exists(file_path):
+            return file_path
+
+        print(f"downloading {url}...")
+        with urllib.request.urlopen(url) as response:
+            content = response.read()
+
+        with open(file_path, 'wb') as f:
+            f.write(content)
+        print(f"downloaded to {file_path}")
+
+        if postprocess_fn is not None:
+            postprocess_fn(file_path)
+
+    return file_path
 
 
 # for challenge-15-understand-memory-needed/understand-memory-needed.ipynb

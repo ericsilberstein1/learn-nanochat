@@ -93,6 +93,9 @@ Train for hours on the GPU. Now that `base_train.py` and BPB evaluation are in p
 #### Challenge 20
 Understand and add `engine.py`. So far, for example at the end of the challenge 19 notebook, I've been generating samples in a naive way. In his training loop I see he samples every so often and does so through this "engine." This may also be where I learn about the KV cache. (Yes, that's essential. Making a notebook just for that part in the challenge.)
 
+#### Challenge 21
+Understand CORE metric evaluation. Possibly implement now or possibly hold off. (Decided to implement.)
+
 #### Future potential challenges, things to look up, questions, and todo 
 * Evaluate the tokenizer similar to `scripts/tok_eval.py`.
 
