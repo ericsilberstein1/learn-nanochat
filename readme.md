@@ -99,6 +99,10 @@ Understand CORE metric evaluation. Possibly implement now or possibly hold off. 
 #### Challenge 22
 Add wandb logging. This should be straightforward and maybe it will be helpful before scaling up training.
 
+#### Challenge 23
+Train on multiple GPUs. Before trying out more powerful GPUs, I want to get the hang of training with multiple GPUs.
+
+
 #### Future potential challenges, things to look up, questions, and todo 
 * Evaluate the tokenizer similar to `scripts/tok_eval.py`.
 
