@@ -8,6 +8,7 @@ import math
 from functools import partial
 from my_nanochat.my_common import get_dist_info
 from my_nanochat.muon import Muon, DistMuon
+from my_nanochat.adamw import DistAdamW
 
 @dataclass
 class GPTConfig:
@@ -196,13 +197,12 @@ class GPT(nn.Module):
             dict(params=embedding_params, lr=embedding_lr * dmodel_lr_scale),
         ]
         adamw_kwargs = dict(betas=(0.8, 0.95), eps=1e-10, weight_decay=weight_decay)
-        DistAdamW = None # for now so it will fail until I "copy" adamw.py
         AdamWFactory = DistAdamW if ddp else partial(torch.optim.AdamW, fused=True)
         adamw_optimizer = AdamWFactory(adam_groups, **adamw_kwargs)
         
         # Create the Muon optimizer for the linear layers
         muon_kwargs = dict(lr=matrix_lr, momentum=0.95)
-        MuonFactory = DistMoon if ddp else Muon
+        MuonFactory = DistMuon if ddp else Muon
         muon_optimizer = MuonFactory(matrix_params, **muon_kwargs)
 
         # combine the two optimizers into one list

@@ -18,8 +18,14 @@ def get_base_dir():
 
 # return ddp, ddp_rank, ddp_local_rank, ddp_world_size
 def get_dist_info():
-    # for now
-    return False, 0, 0, 1
+    if is_ddp():
+        assert all(var in os.environ for var in ['RANK', 'LOCAL_RANK', 'WORLD_SIZE'])
+        ddp_rank = int(os.environ['RANK'])
+        ddp_local_rank = int(os.environ['LOCAL_RANK'])
+        ddp_world_size = int(os.environ['WORLD_SIZE'])
+        return True, ddp_rank, ddp_local_rank, ddp_world_size
+    else:
+        return False, 0, 0, 1
 
 def autodetect_device_type():
     if torch.cuda.is_available():
@@ -32,8 +38,7 @@ def autodetect_device_type():
     return device_type
 
 def is_ddp():
-    # TODO
-    return False
+    return int(os.environ.get('RANK', -1)) != -1
 
 def compute_init(device_type="cuda"):
     assert device_type in ["cuda", "mps", "cpu"]

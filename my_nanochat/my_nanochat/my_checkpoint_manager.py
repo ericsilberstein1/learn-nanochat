@@ -7,27 +7,27 @@ from my_nanochat.my_common import print0
 from my_nanochat.my_gpt import GPTConfig, GPT
 from my_nanochat.my_tokenizer import get_tokenizer
 
-def save_checkpoint(checkpoint_dir, step, model_data, optimizer_data, meta_data):
-    assert int(os.environ.get('RANK', 0)) == 0
-    os.makedirs(checkpoint_dir, exist_ok=True)
-    model_path = os.path.join(checkpoint_dir, f"model_{step:06d}.pt")
-    torch.save(model_data, model_path)
-    print(f"saved model to {model_path}")
+def save_checkpoint(checkpoint_dir, step, model_data, optimizer_data, meta_data, rank=0):
+    if rank == 0:
+        os.makedirs(checkpoint_dir, exist_ok=True)
+        model_path = os.path.join(checkpoint_dir, f"model_{step:06d}.pt")
+        torch.save(model_data, model_path)
+        print(f"saved model to {model_path}")
+        meta_path = os.path.join(checkpoint_dir, f"meta_{step:06d}.json")
+        with open(meta_path, "w", encoding="utf-8") as f:
+            json.dump(meta_data, f, indent=2)
+        print(f"saved metadata to {meta_path}")
     if optimizer_data is not None:
-        optimizer_path = os.path.join(checkpoint_dir, f"optim_{step:06d}.pt")
+        optimizer_path = os.path.join(checkpoint_dir, f"optim_{step:06d}_rank{rank:d}.pt")
         torch.save(optimizer_data, optimizer_path)
-        print(f"saved optimizer to {model_path}")
-    meta_path = os.path.join(checkpoint_dir, f"meta_{step:06d}.json")
-    with open(meta_path, "w", encoding="utf-8") as f:
-        json.dump(meta_data, f, indent=2)
-    print(f"saved metadata to {meta_path}")
+        print(f"saved optimizer to {optimizer_path}")
 
-def load_checkpoint(checkpoint_dir, step, device, load_optimizer=False):
+def load_checkpoint(checkpoint_dir, step, device, load_optimizer=False, rank=0):
     model_path = os.path.join(checkpoint_dir, f"model_{step:06d}.pt")
     model_data = torch.load(model_path, map_location=device)
     optimizer_data = None
     if load_optimizer:
-        optimizer_path = os.path.join(checkpoint_dir, f"optim_{step:06d}.pt")
+        optimizer_path = os.path.join(checkpoint_dir, f"optim_{step:06d}_rank{rank:d}.pt")
         optimizer_data = torch.load(optimizer_path, map_location=device)
     meta_path = os.path.join(checkpoint_dir, f"meta_{step:06d}.json")
     with open(meta_path, 'r', encoding='utf-8') as f:
