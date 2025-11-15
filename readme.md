@@ -102,6 +102,8 @@ Add wandb logging. This should be straightforward and maybe it will be helpful b
 #### Challenge 23
 Train on multiple GPUs. Before trying out more powerful GPUs, I want to get the hang of training with multiple GPUs.
 
+#### Challenge 24
+Train on 2 GPUs for a few hours.
 
 #### Future potential challenges, things to look up, questions, and todo 
 * Evaluate the tokenizer similar to `scripts/tok_eval.py`.
@@ -135,6 +137,10 @@ Train on multiple GPUs. Before trying out more powerful GPUs, I want to get the 
 * Better understand the concept behind BPB eval, nits, why it's a legit way to compare loss across diff vocab sizes, etc.
 
 * Make sure I understand how weight initialization works for distributed training and if it's ok for weights on diffrent GPUs to start out different
+
+* Try tiny examples of torch.dist functions in a notebook and potentially time moving tensors between GPUs vs within a GPU
+
+* If warnings at start of train persist on more modern GPUs investigate
 
 #### Completed
 

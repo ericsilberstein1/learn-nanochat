@@ -89,7 +89,7 @@ def evaluate_model(model, tokenizer, device, max_per_task=-1, tasks_to_run=None)
     core_metric = sum(centered_results.values()) / len(centered_results)
     out = {
         'results': results,
-        'centered_result': centered_results,
+        'centered_results': centered_results,
         'core_metric': core_metric
     }
     return out
