@@ -8,7 +8,17 @@ import os
 # copied from https://github.com/karpathy/nanochat/blob/master/nanochat/tokenizer.py
 SPLIT_PATTERN = r"""'(?i:[sdmt]|ll|ve|re)|[^\r\n\p{L}\p{N}]?+\p{L}+|\p{N}{1,2}| ?[^\s\p{L}\p{N}]++[\r\n]*|\s*[\r\n]|\s+(?!\S)|\s+"""
 
-SPECIAL_TOKENS = ["<|bos|>"]
+SPECIAL_TOKENS = [
+    "<|bos|>",
+    "<|user_start|>", # user messages
+    "<|user_end|>",
+    "<|assistant_start|>", # assistant messages
+    "<|assistant_end|>",
+    "<|python_start|>", # assistant invokes python REPL tool
+    "<|python_end|>",
+    "<|output_start|>", # python REPL outputs back to assistant
+    "<|output_end|>",
+]
 
 class MyTokenizer:
 

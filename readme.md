@@ -105,6 +105,9 @@ Train on multiple GPUs. Before trying out more powerful GPUs, I want to get the 
 #### Challenge 24
 Train on 2 GPUs for a few hours.
 
+#### Challenge 25
+Do a complete pretrain of the d20 model using the same specs as in his `speedrun.sh`.
+
 #### Future potential challenges, things to look up, questions, and todo 
 * Evaluate the tokenizer similar to `scripts/tok_eval.py`.
 

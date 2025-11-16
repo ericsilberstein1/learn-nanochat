@@ -10,9 +10,12 @@ def print0(s, **kwargs):
         print(s, **kwargs)
 
 def get_base_dir():
-    home_dir = os.path.expanduser("~")
-    cache_dir = os.path.join(home_dir, ".cache")
-    nanochat_dir = os.path.join(cache_dir, "my_nanochat")
+    if os.environ.get("NANOCHAT_BASE_DIR"):
+        nanochat_dir = os.environ.get("NANOCHAT_BASE_DIR")
+    else:
+        home_dir = os.path.expanduser("~")
+        cache_dir = os.path.join(home_dir, ".cache")
+        nanochat_dir = os.path.join(cache_dir, "my_nanochat")
     os.makedirs(nanochat_dir, exist_ok = True)
     return nanochat_dir
 
