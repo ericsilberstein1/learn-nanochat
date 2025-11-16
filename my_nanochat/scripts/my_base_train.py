@@ -33,7 +33,8 @@ max_seq_len = 2048
 
 # training horizon
 num_iterations = -1
-# TODO target_flops, target_param_data_ratio
+# TODO target_flops
+target_param_data_ratio = 20 # calculate num_iterations to maintain fixed data:param ratio (Chinchilla=20) (-1 = disable)
 
 # optimization
 device_batch_size = 32
@@ -122,9 +123,14 @@ print0(f"Number of parameters: {num_params:,}")
 # TODO num_flops_per_token = model.estimate_flops()
 # print0(f"Estimated FLOPs per token: {num_flops_per_token:e}")
 
-assert num_iterations > 0
-print0(f"Using user-provided number of iterations: {num_iterations:,}")
-# TODO training horizon based on target_flops or target_param_data_ratio
+if num_iterations > 0:
+    print0(f"Using user-provided number of iterations: {num_iterations:,}")
+elif target_param_data_ratio > 0:
+    target_tokens = target_param_data_ratio * num_params
+    num_iterations = target_tokens // total_batch_size
+    print0(f"Calculated num iterations from target_param_data_ratio as {num_iterations:,}")
+# TODO training horizon based on target_flops
+
 total_tokens = total_batch_size * num_iterations
 print0(f"Total number of training tokens: {total_tokens:,}")
 print0(f"tokens : param ratio: {total_tokens / num_params:.2f} (he has note that Chinchilla is ~20)")
