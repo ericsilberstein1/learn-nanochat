@@ -108,6 +108,9 @@ Train on 2 GPUs for a few hours.
 #### Challenge 25
 Do a complete pretrain of the d20 model using the same specs as in his `speedrun.sh`.
 
+#### Challenge 26
+Understand what "mid train" is and look at some of the training data.
+
 #### Future potential challenges, things to look up, questions, and todo 
 * Evaluate the tokenizer similar to `scripts/tok_eval.py`.
 
