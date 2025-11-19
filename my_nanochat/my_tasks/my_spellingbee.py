@@ -4,6 +4,7 @@ import random
 import re
 
 WORD_LIST_URL = "https://raw.githubusercontent.com/dwyl/english-words/refs/heads/master/words_alpha.txt"
+TEST_RANDOM_SEED_OFFSET = 10_000_000 # much bigger than the ~370,000 words in the list
 
 class MySimpleSpelling(MyTask):
     def __init__(self, size=1000, split="train", **kwargs):
@@ -27,7 +28,7 @@ class MySimpleSpelling(MyTask):
         return self.size
 
     def get_example(self, index):
-        seed = index if self.split == 'train' else -(index + 1)
+        seed = index if self.split == 'train' else TEST_RANDOM_SEED_OFFSET + index
         rng = random.Random(seed)
         word = rng.choice(self.words)
         word_letters = ','.join(list(word))
@@ -132,7 +133,7 @@ class MySpellingBee(MyTask):
         return self.size
 
     def get_example(self, index):
-        seed = index if self.split == 'train' else -(index + 1)
+        seed = index if self.split == 'train' else TEST_RANDOM_SEED_OFFSET + index
         rng = random.Random(seed)
         
         word = rng.choice(self.words)

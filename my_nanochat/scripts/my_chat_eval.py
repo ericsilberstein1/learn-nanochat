@@ -18,7 +18,7 @@ from my_tasks.humaneval import HumanEval
 from my_tasks.my_arc import MyARC
 
 
-def run_generative_eval(task_object, tokenizer, model, engine, num_samples, max_new_tokens, temperature, top_k, max_problems=None):
+def run_generative_eval(task_object, tokenizer, model, engine, num_samples, max_new_tokens, temperature, top_k, max_problems=None, print_failed=False):
 
     ddp, ddp_rank, ddp_local_rank, ddp_world_size = get_dist_info()
     device = model.get_device()
@@ -26,10 +26,12 @@ def run_generative_eval(task_object, tokenizer, model, engine, num_samples, max_
     num_problems = len(task_object) if max_problems is None else min(len(task_object), max_problems)
 
     num_passed, total = 0, 0
+    num_failed_printed = 0
     for i in range(ddp_rank, num_problems, ddp_world_size):
         conversation = task_object[i]
 
         encoded_prompt = tokenizer.render_for_completion(conversation)
+
         results, _ = engine.generate_batch(
             encoded_prompt,
             num_samples=num_samples,
@@ -43,6 +45,13 @@ def run_generative_eval(task_object, tokenizer, model, engine, num_samples, max_
 
         outcomes = [task_object.evaluate(conversation, completion) for completion in completions]
         passed = any(outcomes) # so if any are right we count it?
+
+        if (not passed) and print_failed and num_failed_printed < 10:
+            print(f"Failed example: (example {num_failed_printed} of a max of 10 to be printed)")
+            print(f"Conversation: {conversation}\n")
+            print(f"Model completion(s): {completions}")
+            print("--------------")
+            num_failed_printed += 1
 
         total += 1
         num_passed += int(passed)
@@ -69,7 +78,9 @@ def run_generative_eval(task_object, tokenizer, model, engine, num_samples, max_
 
     return num_passed / total
 
-def run_categorical_eval(task_object, tokenizer, model, batch_size, max_problems=None):
+def run_categorical_eval(task_object, tokenizer, model, batch_size, max_problems=None, print_failed=False):
+
+    assert not print_failed # TODO add support later if want it
 
     ddp, ddp_rank, ddp_local_rank, ddp_world_size = get_dist_info()
     device = model.get_device()
@@ -135,7 +146,8 @@ def run_chat_eval(
     max_new_tokens=512,
     temperature=0.0,
     top_k=50,
-    max_problems=None):
+    max_problems=None,
+    print_failed=False):
 
     task_module = {
         'HumanEval': HumanEval,
@@ -148,7 +160,7 @@ def run_chat_eval(
     task_object = task_module()
 
     if task_object.eval_type == 'generative':
-        acc = run_generative_eval(task_object, tokenizer, model, engine, num_samples, max_new_tokens, temperature, top_k, max_problems=max_problems)
+        acc = run_generative_eval(task_object, tokenizer, model, engine, num_samples, max_new_tokens, temperature, top_k, max_problems=max_problems, print_failed=print_failed)
     elif task_object.eval_type == 'categorical':
         acc = run_categorical_eval(task_object, tokenizer, model, batch_size, max_problems=max_problems)
     else:
@@ -172,6 +184,7 @@ if __name__ == "__main__":
     parser.add_argument('-g', '--model-tag', type=str, default=None, help='Model tag to load')
     parser.add_argument('-s', '--step', type=int, default=None, help='Step to load')
     parser.add_argument('-x', '--max-problems', type=int, default=None, help='Max problems to evaluate')
+    parser.add_argument('--print-failed', action='store_true', help='Print up to 10 failed examples')
     parser.add_argument('--device-type', type=str, default='', choices=['cuda', 'cpu', 'mps'], help='Device type for evaluation: cuda|cpu|mps. empty => autodetect')
     args = parser.parse_args()
 
@@ -208,6 +221,7 @@ if __name__ == "__main__":
                 temperature=args.temperature,
                 top_k=args.top_k,
                 max_problems=args.max_problems,
+                print_failed=args.print_failed,
             )
         results[task_name] = acc
         print0(f"{task_name} accuracy: {100 * acc:.2f}%")
