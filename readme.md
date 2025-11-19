@@ -3,17 +3,18 @@
 
 I heard about [nanochat](https://github.com/karpathy/nanochat) and watched this [podcast](https://www.youtube.com/watch?v=lXUZvyajciY) with Andrej Karpathy. He suggests learning by rewriting all the code without any copy and paste.
 
-I started to look at the tokenizer. I found [this](https://huggingface.co/learn/llm-course/en/chapter6/5) intro to byte-pair encoding tokenization on Hugging Face and read enough to get the idea.
+Each challenge is in a folder. Most have jupyter notebooks.
+
+```
+uv sync
+uv run jupyter lab
+```
 
 #### Challenge 1
 Write a toy BPE tokenizer in python to get the idea. Doing this in `challenge-01-play-tokenzier/tokenizer.ipynb`.
 
-```
-uv run jupyter lab
-```
-
 #### Challenge 2
-I've never used Rust before. Get familiar with it by before trying to reimplement a performant tokenzier similart to the one in the nanogpt repo. Start with hello world.
+I've never used Rust before. Get familiar with it by before trying to reimplement a performant tokenzier similart to the one in the nanochat repo. Start with hello world.
 
 ```
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
@@ -23,14 +24,11 @@ cargo run
 ```
 
 #### Challenge 3
-Rust version of the python toy code from tokenzier.ipynb.
+Code a Rust version of the python toy code from `challenge-01-play-tokenzier/tokenizer.ipynb`.
 
 ```
 cargo run
 ```
-
-Got this working and then made the code into what is hopefully more idiomatic Rust.
-
 
 #### Challlenge 4
 Write something that does something in parallel, example using map / reduce.
@@ -120,7 +118,7 @@ Midtrain the d20 model.
 #### Future potential challenges, things to look up, questions, and todo 
 * Evaluate the tokenizer similar to `scripts/tok_eval.py`.
 
-* Understand the KV cache including how much compute is saved by it
+* Understand the KV cache including how much compute is saved by it (first part done, see challenge 20)
 
 * Why do we apply rotary embeddings to q and k but not v? What if we applied it only to one? Or all three?
 
@@ -134,21 +132,21 @@ Midtrain the d20 model.
 
 * Understand meta init
 
-* With AdamW, for example, why do we still modify the LR in the training loop?
+* With AdamW, for example, why do we still need to modify the LR in the training loop?
 
 * How do positional embeddings really work? Why do they work? What if you leave them out? What if you put them only before the first layer?
 
-* Understand how to compute possible model dimensions, batch size, sequence length, etc. based on GPU memory.
+* Understand how to compute possible model dimensions, batch size, sequence length, etc. based on GPU memory. (mostly done, see challenge 15)
 
 * For training at least, what is the difference between say a batch size of 1 and a sequence length of 64 vs a batch size of 2 and a sequence length of 32? How do you choose?
 
-* Understand this: UserWarning: Quadro RTX 4000 does not support bfloat16 compilation natively, skipping (for example, if a GPU doesnt' support bfloat16 compilation, is it better not to use bfloat16 at all?)
+* Understand this: UserWarning: Quadro RTX 4000 does not support bfloat16 compilation natively, skipping (for example, if a GPU doesn't support bfloat16 compilation, is it better not to use bfloat16 at all?)
 
 * Why in the dataloader do we use int32 for inputs but int64 for targets?
 
 * Better understand the concept behind BPB eval, nits, why it's a legit way to compare loss across diff vocab sizes, etc.
 
-* Make sure I understand how weight initialization works for distributed training and if it's ok for weights on diffrent GPUs to start out different
+* Make sure I understand how weight initialization works for distributed training and if it's ok for weights on diffrent GPUs to start out different (most done, see challenge 23)
 
 * Try tiny examples of torch.dist functions in a notebook and potentially time moving tensors between GPUs vs within a GPU
 
@@ -158,8 +156,4 @@ Midtrain the d20 model.
 
 * Understand why we don't evalute CORE metrics or sample every so often during mid training
 
-* Re-implement or at least look closely at execution.py and humaneval.py
-
-#### Completed
-
-* After challenge 14, add autodetect_device_type() so the same notebooks will work on cpu and gpu going forward (ended up doing as part of challenge 14)
+* Re-implement or at least look more closely at execution.py and humaneval.py
