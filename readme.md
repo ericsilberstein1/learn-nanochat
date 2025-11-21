@@ -121,6 +121,9 @@ Understand SFT.
 #### Challenge 30
 SFT train the d20 model.
 
+#### Challenge 31
+Add tool calling to engine.
+
 #### Future potential challenges, things to look up, questions, and todo 
 * Evaluate the tokenizer similar to `scripts/tok_eval.py`.
 

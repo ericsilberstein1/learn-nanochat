@@ -1,5 +1,57 @@
 import torch
 import torch.nn.functional as F
+from contextlib import contextmanager
+import signal
+import warnings
+from collections import deque
+
+@contextmanager
+def timeout(duration, formula):
+    def timeout_handler(signum, frame):
+        raise Exception(f"'{formula}' timed out after {duration} seconds")
+
+    signal.signal(signal.SIGALRM, timeout_handler)
+    signal.alarm(duration)
+    yield
+    signal.alarm(0)
+
+def eval_with_timeout(formula, max_time=3):
+    try:
+        with timeout(max_time, formula):
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore', SyntaxWarning)
+                return eval(formula, {"__builtins__": {}}, {})
+    except Exception as e:
+        signal.alarm(0)
+        # see his comment about ok to ignore wrong calculator usage
+        return None
+
+def use_calculator(expr):
+    # remove commas from numbers -- is that cheating?
+    expr = expr.replace(",", "")
+
+    if all([x in "0123456789*+-/.()" for x in expr]):
+        if "**" in expr:
+            return None
+        return eval_with_timeout(expr)
+
+    allowed_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'\"()._ "
+    if not all([x in allowed_chars for x in expr]):
+        return None
+
+    dangerous_patterns = ['__', 'import', 'exec', 'eval', 'compile', 'open', 'file',
+                         'input', 'raw_input', 'globals', 'locals', 'vars', 'dir',
+                         'getattr', 'setattr', 'delattr', 'hasattr']
+    expr_lower = expr.lower()
+    if any(pattern in expr_lower for pattern in dangerous_patterns):
+        return None
+
+    if '.count(' not in expr:
+        return None
+
+    return eval_with_timeout(expr)
+
+
 
 class KVCache:
 
@@ -69,7 +121,9 @@ class RowState:
     # rows through the model in in parallel, one column of tokens at a time?
     def __init__(self, current_tokens=None):
         self.current_tokens = current_tokens or [] # current token sequence for this row
-        # TODO 
+        self.forced_tokens = deque()
+        self.in_python_block = False
+        self.python_expr_tokens = []
         self.completed = False # done generating this row, for example becuase hit <bos> ?
 
 @torch.inference_mode()
@@ -105,6 +159,11 @@ class Engine:
         rng.manual_seed(seed)
 
         # TODO: get the special tokens we need to coordinate the tool use state machine
+        python_start = self.tokenizer.encode_special("<|python_start|>")
+        python_end = self.tokenizer.encode_special("<|python_end|>")
+        output_start = self.tokenizer.encode_special("<|output_start|>")
+        output_end = self.tokenizer.encode_special("<|output_end|>")
+        assistant_end = self.tokenizer.encode_special("<|assistant_end|>") # if sampled, ends row
         bos = self.tokenizer.get_bos_token_id()
 
         # 1) run a batch of size 1 with the prompt tokens to prefill the kv cache (?)
@@ -157,20 +216,33 @@ class Engine:
             token_column = [] # contains next token id along each row
             token_masks = [] # contains the mask 1 = it was sample, 0 = it was forced along each row
             for i, state in enumerate(row_states):
-                # select the next token in this row
-                # TODO: logic around forcing tokens
-                next_token = sampled_tokens[i] # TODO this is until add logic around forcing tokens
+                is_forced = len(state.forced_tokens) > 0
+                token_masks.append(0 if is_forced else 1)
+                next_token = state.forced_tokens.popleft() if is_forced else sampled_tokens[i]
                 token_column.append(next_token) 
-                token_masks.append(0) # TODO this is until add logic around forcing tokens
 
                 # update state of row to include next token
                 state.current_tokens.append(next_token)
 
-                # TODO also handle <assistant_end>
-                if next_token == bos:
+                if next_token == assistant_end or next_token == bos:
                     state.completed = True
-                
-                # TODO handle tool logic
+
+                if next_token == python_start:
+                    state.in_python_block = True
+                    state.python_expr_tokens = []
+                elif next_token == python_end and state.in_python_block:
+                    state.in_python_block = False
+                    if state.python_expr_tokens:
+                        expr = self.tokenizer.decode(state.python_expr_tokens)
+                        result = use_calculator(expr)
+                        if result is not None:
+                            result_tokens = self.tokenizer.encode(str(result))
+                            state.forced_tokens.append(output_start)
+                            state.forced_tokens.extend(result_tokens)
+                            state.forced_tokens.append(output_end)
+                    state.python_expr_tokens = [] # do we need this and the one above?
+                elif state.in_python_block:
+                    state.python_expr_tokens.append(next_token)
 
             yield token_column, token_masks
             num_generated += 1
@@ -178,7 +250,7 @@ class Engine:
             ids = torch.tensor(token_column, dtype=torch.long, device=device).unsqueeze(1)
 
     def generate_batch(self, tokens, num_samples=1, **kwargs):
-        # TODO handle <|assistant_end|>
+        assistant_end = self.tokenizer.encode_special('<|assistant_end|>')
         bos = self.tokenizer.get_bos_token_id()
         results = [tokens.copy() for _ in range(num_samples)]
         masks = [[0] * len(tokens) for _ in range(num_samples)]
@@ -186,7 +258,7 @@ class Engine:
         for token_column, token_masks in self.generate(tokens, num_samples, **kwargs):
             for i, (token, mask) in enumerate(zip(token_column, token_masks)):
                 if not completed[i]:
-                    if token == bos:
+                    if token == assistant_end or token == bos:
                         completed[i] = True
                     else:
                         results[i].append(token)
