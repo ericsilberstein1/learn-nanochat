@@ -124,6 +124,9 @@ SFT train the d20 model.
 #### Challenge 31
 Add tool calling to engine.
 
+#### Challenge 32
+Repeat chat eval on d20 and repeat SFT train with more frequent evaluation of validation loss.
+
 #### Future potential challenges, things to look up, questions, and todo 
 * Evaluate the tokenizer similar to `scripts/tok_eval.py`.
 
