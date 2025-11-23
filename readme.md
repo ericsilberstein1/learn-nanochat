@@ -10,6 +10,8 @@ uv sync
 uv run jupyter lab
 ```
 
+### Challenges
+
 #### Challenge 1
 Write a toy BPE tokenizer in python to get the idea. Doing this in `challenge-01-play-tokenzier/tokenizer.ipynb`.
 
@@ -125,9 +127,16 @@ SFT train the d20 model.
 Add tool calling to engine.
 
 #### Challenge 32
-Repeat chat eval on d20 and repeat SFT train with more frequent evaluation of validation loss.
+Redo chat eval on d20 and repeat SFT train with more frequent evaluation of validation loss.
 
-#### Future potential challenges, things to look up, questions, and todo 
+### Examples of training/validation/metrics data
+
+* [For training tokenizer and base training of model](challenge-08-train-tokenizer/example-data.ipynb)
+* [For CORE metrics](challenge-21-understand-core-metric/core-evaluation-data-examples.ipynb)
+* [For mid-train](challenge-26-understand-midtrain/midtrain-data-examples.ipynb)
+* [Additional for SFT training](challenge-29-understand-sft/sft-data-examples.ipynb)
+
+### Future potential challenges, things to look up, questions, and todo
 * Evaluate the tokenizer similar to `scripts/tok_eval.py`.
 
 * Understand the KV cache including how much compute is saved by it (first part done, see challenge 20)
