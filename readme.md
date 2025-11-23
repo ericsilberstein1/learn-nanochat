@@ -129,6 +129,9 @@ Add tool calling to engine.
 #### Challenge 32
 Redo chat eval on d20 and repeat SFT train with more frequent evaluation of validation loss.
 
+#### Challenge 33
+Add chat CLI.
+
 ### Examples of training/validation/metrics data
 
 * [For training tokenizer and base training of model](challenge-08-train-tokenizer/example-data.ipynb)
