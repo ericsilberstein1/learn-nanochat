@@ -20,6 +20,7 @@ from my_nanochat.my_checkpoint_manager import save_checkpoint
 from my_nanochat.my_loss_eval import evaluate_bpb
 from my_nanochat.my_engine import Engine
 from scripts.my_base_eval import evaluate_model
+from my_nanochat.my_report import get_report
 
 import wandb
 
@@ -314,7 +315,29 @@ print0(f"Peak memory usage: {get_max_memory() / 1024 / 1024:.2f}MiB")
 print0(f"Total training time: {total_training_time/60:.2f}m")
 print0(f"Minimum validation bpb: {min_val_bpb:.4f}")
 
-# TODO log to report
+# log to report
+get_report().log(section='Base model training', data=[
+    user_config,
+    { # stats about the training setup
+        "Number of parameters": num_params,
+        # TODO "Number of FLOPs per token": f"{num_flops_per_token:e}",
+        "Calculated number of iterations": num_iterations,
+        "Number of training tokens": total_tokens,
+        "Tokens : Params ratio": total_batch_size * num_iterations / num_params,
+        "DDP world size": ddp_world_size,
+        "warmup_ratio": warmup_ratio,
+        "warmdown_ratio": warmdown_ratio,
+        "final_lr_frac": final_lr_frac,
+    },
+    { # stats about training outcomes
+        "Minimum validation bpb": min_val_bpb,
+        "Final validation bpb": val_bpb,
+        "CORE metric estimate": results.get("core_metric", None),
+        # TODO "MFU %": f"{mfu:.2f}%",
+        # TODO "Total training flops": f"{flops_so_far:e}",
+        "Total training time": f"{total_training_time/60:.2f}m",
+        "Peak memory usage": f"{get_max_memory() / 1024 / 1024:.2f}MiB",
+    }])
 
 # cleanup
 wandb_run.finish()

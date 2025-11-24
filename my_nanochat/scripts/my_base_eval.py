@@ -15,6 +15,8 @@ from my_nanochat.my_common import get_base_dir, print0, log_memory_stats, downlo
 from my_nanochat.my_core_eval import evaluate_task
 from my_nanochat.my_engine import Engine
 from my_nanochat.my_checkpoint_manager import load_model
+from my_nanochat.my_report import get_report
+
 
 
 # ~162MB of data needed to evaluate the CORE metric
@@ -114,17 +116,43 @@ def main():
     autocast_ctx = torch.amp.autocast(device_type=device_type, dtype=torch.bfloat16) if device_type == "cuda" else nullcontext()
 
     model, tokenizer, meta = load_model(args.source, device, phase='eval', model_tag=args.model_tag)
+    model_name = f"base_model (step {meta['step']})" # just for logging
+    model_slug = f"base_model_{meta['step']:06d}" # for the output csv file
     engine = Engine(model, tokenizer)
 
     tasks_to_run = None if args.tasks_to_run is None else args.tasks_to_run.split('|')
 
     with autocast_ctx:
-        results = evaluate_model(model, tokenizer, device, max_per_task=args.max_per_task, tasks_to_run=tasks_to_run)
+        out = evaluate_model(model, tokenizer, device, max_per_task=args.max_per_task, tasks_to_run=tasks_to_run)
 
-    print0(f"CORE metric: {results['core_metric']:.4f}")
-    print0(f"centered results:\n{json.dumps(results['centered_results'], indent=4)}")
+    core_metric = None
+    centered_results = {}
+    if ddp_rank == 0:
+        base_dir = get_base_dir()
+        output_csv_path = os.path.join(base_dir, 'base_eval', f"{model_slug}.csv")
+        os.makedirs(os.path.dirname(output_csv_path), exist_ok=True)
+        results = out['results']
+        centered_results = out['centered_results']
+        core_metric = out['core_metric']
+        with open(output_csv_path, 'w', encoding='utf-8', newline='') as f:
+            f.write(f"{'Task':<35}, {'Accuracy':<10}, {'Centered':<10}\n")
+            for label in results:
+                f.write(f"{label:<35}, {results[label]:<10.6f}, {centered_results[label]:<10.6f}\n")
+            f.write(f"{'CORE':<35}, {'':<10}, {core_metric:<10.6f}\n")
+        print0('='*80)
+        print0(f"Model: {model_name}")
+        print0('='*80)
+        with open(output_csv_path, 'r', encoding='utf-8') as f:
+            print0(f.read())
 
-    # TODO write out CSV file, print out table, log to report
+    
+    get_report().log(section='Base model evaluation', data=[
+        {
+            "Model": model_name,
+            "CORE metric": core_metric,
+        },
+        centered_results,
+    ])
 
     compute_cleanup()
 

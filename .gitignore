@@ -61,3 +61,6 @@ ENV/
 wandb/
 
 files_copied_from_servers
+
+scratch.ipynb
+scratch.txt

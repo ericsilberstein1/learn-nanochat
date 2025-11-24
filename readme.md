@@ -132,6 +132,9 @@ Redo chat eval on d20 and repeat SFT train with more frequent evaluation of vali
 #### Challenge 33
 Add chat CLI.
 
+#### Challenge 34
+Understand and add reporting.
+
 ### Examples of training/validation/metrics data
 
 * [For training tokenizer and base training of model](challenge-08-train-tokenizer/example-data.ipynb)

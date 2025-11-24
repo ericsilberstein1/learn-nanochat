@@ -19,6 +19,8 @@ from my_tasks.my_gsm8k import MyGSM8K
 from my_nanochat.my_engine import Engine
 from my_nanochat.my_checkpoint_manager import load_model, save_checkpoint
 from scripts.my_chat_eval import run_chat_eval
+from my_nanochat.my_report import get_report
+
 
 # config
 run = "dummy"
@@ -248,7 +250,15 @@ if master_process:
     )
     print(f"Saved model checkpoint to {checkpoint_dir}")
 
-# todo logging
+get_report().log(section='Chat SFT', data=[
+    user_config,
+    {
+        'Training rows': len(train_ds),
+        'Number of iterations': num_iterations,
+        'Training loss': train_loss_item,
+        'Validation loss': val_loss,
+    },
+])
 
 wandb_run.finish()
 compute_cleanup()

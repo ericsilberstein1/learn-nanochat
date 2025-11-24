@@ -19,6 +19,8 @@ from my_nanochat.my_tokenizer import get_tokenizer
 from my_nanochat.my_checkpoint_manager import load_model, save_checkpoint
 from my_nanochat.my_tokenizer import get_token_bytes
 from my_nanochat.my_loss_eval import evaluate_bpb
+from my_nanochat.my_report import get_report
+
 
 
 # config
@@ -276,7 +278,18 @@ print0(f"Peak memory usage: {get_max_memory() / 1024 / 1024:.2f}MiB")
 print0(f"Total training time: {total_training_time/60:.2f}m")
 print0(f"Minimum validation bpb: {min_val_bpb:.4f}")
 
-# TODO log to report if not dry_run
+if not dry_run:
+    get_report().log(section='Midtraining', data=[
+        user_config,
+        {
+            "Number of iterations": step,
+            "DDP world size": ddp_world_size,
+        },
+        {
+            "Minimum validation bpb": min_val_bpb,
+        }
+    ])
+
 
 # cleanup
 wandb_run.finish()

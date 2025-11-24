@@ -16,6 +16,8 @@ from my_tasks.my_customjson import MyCustomJSON
 from my_tasks.my_spellingbee import MySimpleSpelling, MySpellingBee
 from my_tasks.humaneval import HumanEval
 from my_tasks.my_arc import MyARC
+from my_nanochat.my_report import get_report
+
 
 
 def run_generative_eval(task_object, tokenizer, model, engine, num_samples, max_new_tokens, temperature, top_k, max_problems=None, print_failed=False):
@@ -226,7 +228,21 @@ if __name__ == "__main__":
         results[task_name] = acc
         print0(f"{task_name} accuracy: {100 * acc:.2f}%")
 
-    # TODO log to report, center
+    all_tasks_were_evaluted = all(task_name in results for task_name in all_tasks)
+    chatcore_metric_dict = {}
+    if all_tasks_were_evaluted:
+        centered_mean = 0
+        for task_name, acc in results.items():
+            baseline_acc = baseline_accuracies[task_name]
+            centered_acc = (acc - baseline_acc) / (1.0 - baseline_acc)
+            centered_mean += centered_acc
+        chatcore_metric = centered_mean / len(results)
+        chatcore_metric_dict = {'ChatCORE metric': chatcore_metric}
+    get_report().log(section='Chat evaluation ' + args.source, data=[
+        vars(args),
+        results,
+        chatcore_metric_dict,
+    ])
 
     compute_cleanup()
 
