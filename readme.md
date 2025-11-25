@@ -140,6 +140,7 @@ Understand and add reporting.
 * [For training tokenizer and base training of model](challenge-08-train-tokenizer/example-data.ipynb)
 * [For CORE metrics](challenge-21-understand-core-metric/core-evaluation-data-examples.ipynb)
 * [For mid-train](challenge-26-understand-midtrain/midtrain-data-examples.ipynb)
+* [For chat eval](challenge-27-understand-chat-eval/chat-eval-data-examples.ipynb)
 * [Additional for SFT training](challenge-29-understand-sft/sft-data-examples.ipynb)
 
 ### Future potential challenges, things to look up, questions, and todo
