@@ -272,9 +272,9 @@ for step in range(num_steps):
         )
         print(f"Saved model checkpoint to {checkpoint_dir}")
 
-        get_report().log(section='Chat RL', data=[
-            user_config,
-        ])
+get_report().log(section='Chat RL', data=[
+    user_config,
+])
 
-        wandb_run.finish()
-        compute_cleanup()
+wandb_run.finish()
+compute_cleanup()
