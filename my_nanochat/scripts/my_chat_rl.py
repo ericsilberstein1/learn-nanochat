@@ -19,6 +19,7 @@ model_tag = None
 source = "sft"
 dtype = 'bfloat16'
 device_type = ""
+num_steps = -1  # so can test on mac
 device_batch_size = 8
 examples_per_step = 16
 num_samples = 16
@@ -57,7 +58,7 @@ engine = Engine(model, tokenizer)
 
 train_task = MyGSM8K(subset="main", split="train")
 val_task = MyGSM8K(subset="main", split="test")
-num_steps = (len(train_task) // examples_per_step) * num_epochs
+num_steps = (len(train_task) // examples_per_step) * num_epochs if num_steps == -1 else num_steps
 print0(f"Calculated number of steps: {num_steps}")
 
 @torch.no_grad()
