@@ -138,6 +138,9 @@ Understand and add reporting.
 #### Challenge 35
 Understand reinforcement learning.
 
+#### Challenge 36
+RL train the d20 model.
+
 ### Examples of training/validation/metrics data
 
 * [For training tokenizer and base training of model](challenge-08-train-tokenizer/example-data.ipynb)
