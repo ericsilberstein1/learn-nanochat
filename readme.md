@@ -135,6 +135,9 @@ Add chat CLI.
 #### Challenge 34
 Understand and add reporting.
 
+#### Challenge 35
+Understand reinforcement learning.
+
 ### Examples of training/validation/metrics data
 
 * [For training tokenizer and base training of model](challenge-08-train-tokenizer/example-data.ipynb)
