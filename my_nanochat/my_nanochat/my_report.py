@@ -218,7 +218,7 @@ class Report:
                 elif file_name == 'chat-evaluation-sft.md':
                     final_metrics["sft"] = extract(section, chat_metrics)
                 elif file_name == 'chat-evaluation-rl.md':
-                    final_metrics['rl'] = extract(section, "GSM8K")
+                    final_metrics['rl'] = extract(section, chat_metrics)
 
                 out_file.write(section)
                 out_file.write('\n')
