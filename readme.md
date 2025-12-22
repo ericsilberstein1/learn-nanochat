@@ -141,6 +141,9 @@ Understand reinforcement learning.
 #### Challenge 36
 RL train the d20 model.
 
+#### Challenge 37
+Add estimating and logging flops / MFU.
+
 ### Examples of training/validation/metrics data
 
 * [For training tokenizer and base training of model](challenge-08-train-tokenizer/example-data.ipynb)

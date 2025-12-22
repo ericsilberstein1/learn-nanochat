@@ -121,8 +121,8 @@ orig_model = model
 model = torch.compile(model, dynamic=False)
 num_params = sum(p.numel() for p in model.parameters())
 print0(f"Number of parameters: {num_params:,}")
-# TODO num_flops_per_token = model.estimate_flops()
-# print0(f"Estimated FLOPs per token: {num_flops_per_token:e}")
+num_flops_per_token = model.estimate_flops()
+print0(f"Estimated FLOPs per token: {num_flops_per_token:e}")
 
 if num_iterations > 0:
     print0(f"Using user-provided number of iterations: {num_iterations:,}")
@@ -135,7 +135,7 @@ elif target_param_data_ratio > 0:
 total_tokens = total_batch_size * num_iterations
 print0(f"Total number of training tokens: {total_tokens:,}")
 print0(f"tokens : param ratio: {total_tokens / num_params:.2f} (he has note that Chinchilla is ~20)")
-# TODO print total training FLOPs estimate
+print0(f"Total training FLOPs estimate: {num_flops_per_token * total_tokens:e}")
 
 # initialize optimizer
 optimizers = model.setup_optimizers(
@@ -175,10 +175,11 @@ min_val_bpb = float("inf")
 smooth_train_loss = 0 # EMA of training loss
 ema_beta = 0.9 # EMA decay factor
 total_training_time = 0 # wall-clock time
+results = {} # CORE eval
 # run +1 steps to eval and save at end
 for step in range(num_iterations+1):
     last_step = step == num_iterations
-    # TODO flops_so_far = num_flops_per_token * total_batch_size * step
+    flops_so_far = num_flops_per_token * total_batch_size * step
     
     if last_step or step % eval_every == 0:
         # once in a while evaluate the val bpb
@@ -192,10 +193,10 @@ for step in range(num_iterations+1):
             min_val_bpb = val_bpb
         wandb_run.log({
             'step': step,
+            'total_training_flops': flops_so_far,
             'total_training_time': total_training_time,
             'val/bpb': val_bpb,
         })
-        # TODO log flops once have
         model.train()
 
     if core_metric_every > 0 and (last_step or (step > 0 and step % core_metric_every == 0)):
@@ -205,10 +206,10 @@ for step in range(num_iterations+1):
         print0(f"Step {step:05d}: CORE metric: {results['core_metric']:.4f}")
         wandb_run.log({
             'step': step,
+            'total_training_flops': flops_so_far,
             'core_metric': results['core_metric'],
             'centered_results': results['centered_results'],
         })
-        # TODO log flops once have
         model.train()
 
     if master_process and (last_step or (step > 0 and step % sample_every == 0)):
@@ -289,9 +290,9 @@ for step in range(num_iterations+1):
     debiased_smooth_loss = smooth_train_loss / (1 - ema_beta**(step + 1))
     pct_done = 100 * step / num_iterations
     tok_per_sec = int(total_batch_size / dt)
-    # TODO flops_per_sec
-    # TODO promised_flops_per_sec
-    mfu = -1 # TODO mfu
+    flops_per_sec = num_flops_per_token * total_batch_size / dt
+    promised_flops_per_sec_h100 = 989e12 * ddp_world_size # h100 xsm bfloat16 without sparsity (spec sheet says to halve without)
+    mfu = 100 * flops_per_sec / promised_flops_per_sec_h100
     if step > 10:
         total_training_time += dt
     print_grad_norm = f" grad norm: {grad_norm:.4f} |" if grad_clip_enabled else ""
@@ -299,13 +300,14 @@ for step in range(num_iterations+1):
     if step % 100 == 0:
         log_data = {
             'step': step,
+            'total_training_flops': flops_so_far,
             'total_training_time': total_training_time,
             'train/loss': debiased_smooth_loss,
             'train/lrm': lrm,
             'train/dt': dt,
             'train/tok_per_sec': tok_per_sec,
+            'train/mfu': mfu,
         }
-        # TODO add total_training_flops and mfu once have
         if grad_clip_enabled:
             log_data['train/grad_norm'] = grad_norm
         wandb_run.log(log_data)
@@ -320,7 +322,7 @@ get_report().log(section='Base model training', data=[
     user_config,
     { # stats about the training setup
         "Number of parameters": num_params,
-        # TODO "Number of FLOPs per token": f"{num_flops_per_token:e}",
+        "Number of FLOPs per token": f"{num_flops_per_token:e}",
         "Calculated number of iterations": num_iterations,
         "Number of training tokens": total_tokens,
         "Tokens : Params ratio": total_batch_size * num_iterations / num_params,
@@ -333,8 +335,8 @@ get_report().log(section='Base model training', data=[
         "Minimum validation bpb": min_val_bpb,
         "Final validation bpb": val_bpb,
         "CORE metric estimate": results.get("core_metric", None),
-        # TODO "MFU %": f"{mfu:.2f}%",
-        # TODO "Total training flops": f"{flops_so_far:e}",
+        "MFU %": f"{mfu:.2f}%",
+        "Total training flops": f"{flops_so_far:e}",
         "Total training time": f"{total_training_time/60:.2f}m",
         "Peak memory usage": f"{get_max_memory() / 1024 / 1024:.2f}MiB",
     }])

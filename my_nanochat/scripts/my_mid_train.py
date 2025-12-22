@@ -67,7 +67,7 @@ if pretrain_batch_size is not None and device_batch_size > pretrain_batch_size:
 orig_model = model
 model = torch.compile(model, dynamic=False)
 depth = model.config.n_layer
-# TODO num_flops_per_token
+num_flops_per_token = model.estimate_flops()
 tokens_per_fwdbwd = device_batch_size * max_seq_len # for a single rank
 world_tokens_per_fwdbwd = tokens_per_fwdbwd * ddp_world_size
 assert total_batch_size % world_tokens_per_fwdbwd == 0
@@ -167,7 +167,7 @@ ema_beta = 0.9
 total_training_time = 0
 step = 0
 while True:
-    # TODO flops_so_far
+    flops_so_far = num_flops_per_token * total_batch_size * step
 
     if ddp:
         last_step_tensor = torch.tensor(last_step, dtype=torch.int32, device=device)
@@ -186,10 +186,10 @@ while True:
             min_val_bpb = val_bpb
         wandb_run.log({
             'step': step,
+            "total_training_flops": flops_so_far,
             'total_training_time': total_training_time,
             'val/bpb': val_bpb,
         })
-        # TODO log flops once have
         model.train()
     
     if master_process and last_step and not dry_run:
@@ -254,10 +254,9 @@ while True:
     debiased_smooth_loss = smooth_train_loss / (1 - ema_beta**(step + 1))
     pct_done = 100 * progress
     tok_per_sec = int(total_batch_size / dt)
-    # TODO flops_per_sec
-    # TODO promised_flops_per_sec
-    # TODO mfu
-    mfu = -1 # TODO
+    flops_per_sec = num_flops_per_token * total_batch_size / dt
+    promised_flops_per_sec_h100 = 989e12 * ddp_world_size # h100 xsm bfloat16 without sparsity (spec sheet says to halve without)
+    mfu = 100 * flops_per_sec / promised_flops_per_sec_h100
     if step > 10:
         total_training_time += dt
 
@@ -265,13 +264,14 @@ while True:
     if step % 10 == 0:
         wandb_run.log({
             'step': step,
+            'total_training_flops': flops_so_far,
             'total_training_time': total_training_time,
             'train/loss': debiased_smooth_loss,
             'train/lrm': lrm,
             'train/dt': dt,
             'train/tok_per_sec': tok_per_sec,
+            'train/mfu': mfu,
         })
-        # TODO log flops and mfu once have
 
 # print a few more stats
 print0(f"Peak memory usage: {get_max_memory() / 1024 / 1024:.2f}MiB")

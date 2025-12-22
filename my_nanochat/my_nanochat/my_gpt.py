@@ -178,6 +178,13 @@ class GPT(nn.Module):
         if self.transformer.wte.weight.device.type == "cuda":
             self.transformer.wte.to(dtype=torch.bfloat16)
 
+    def estimate_flops(self):
+        nparams = sum(p.numel() for p in self.parameters())
+        nparams_embedding = self.transformer.wte.weight.numel()
+        l, h, q, t = self.config.n_layer, self.config.n_head, self.config.n_embd // self.config.n_head, self.config.sequence_len
+        num_flops_per_token = 6 * (nparams - nparams_embedding) + 12 * l * h * q * t
+        return num_flops_per_token
+    
     def setup_optimizers(self, unembedding_lr=0.004, embedding_lr=0.2, matrix_lr=0.2, weight_decay=0.0):
         model_dim = self.config.n_embd
         ddp, rank, local_rank, world_size = get_dist_info()
