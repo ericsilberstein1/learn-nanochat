@@ -144,6 +144,9 @@ RL train the d20 model.
 #### Challenge 37
 Add estimating and logging flops / MFU.
 
+#### Challenge 38
+Train d32.
+
 ### Examples of training/validation/metrics data
 
 * [For training tokenizer and base training of model](challenge-08-train-tokenizer/example-data.ipynb)
