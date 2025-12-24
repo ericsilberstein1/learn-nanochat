@@ -140,7 +140,7 @@ def forward_model(model, input_ids):
 
 
 @torch.no_grad()
-def evaluate_example(idx, model, tokenizer, data, device, task_meta):
+def evaluate_example(idx, model, tokenizer, data, device, task_meta, return_prompts=False):
     item = data[idx]
     task_type = task_meta['task_type']
     num_fewshot = task_meta['num_fewshot']
@@ -194,7 +194,11 @@ def evaluate_example(idx, model, tokenizer, data, device, task_meta):
     else:
         assert False # TODO
 
-    return is_correct
+    if return_prompts:
+        return is_correct, prompts
+    else:
+        return is_correct
+
 
 def evaluate_task(model, tokenizer, data, device, task_meta):
     rank = dist.get_rank() if dist.is_initialized() else 0
