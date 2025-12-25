@@ -140,7 +140,7 @@ def forward_model(model, input_ids):
 
 
 @torch.no_grad()
-def evaluate_example(idx, model, tokenizer, data, device, task_meta, return_prompts=False):
+def evaluate_example(idx, model, tokenizer, data, device, task_meta, return_prompts_and_mean_losses=False):
     item = data[idx]
     task_type = task_meta['task_type']
     num_fewshot = task_meta['num_fewshot']
@@ -179,6 +179,7 @@ def evaluate_example(idx, model, tokenizer, data, device, task_meta, return_prom
     losses, predictions = forward_model(model, input_ids)
 
     # see if the losses/predictions came out correctly
+    mean_losses = None
     if task_type == 'language_modeling':
         si = start_idxs[0]
         ei = end_idxs[0]
@@ -194,8 +195,8 @@ def evaluate_example(idx, model, tokenizer, data, device, task_meta, return_prom
     else:
         assert False # TODO
 
-    if return_prompts:
-        return is_correct, prompts
+    if return_prompts_and_mean_losses:
+        return is_correct, prompts, mean_losses
     else:
         return is_correct
 
