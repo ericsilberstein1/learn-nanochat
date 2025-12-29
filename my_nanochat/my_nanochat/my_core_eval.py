@@ -140,7 +140,7 @@ def forward_model(model, input_ids):
 
 
 @torch.no_grad()
-def evaluate_example(idx, model, tokenizer, data, device, task_meta, return_prompts_and_mean_losses=False):
+def evaluate_example(idx, model, tokenizer, data, device, task_meta, return_prompts_and_losses=False):
     item = data[idx]
     task_type = task_meta['task_type']
     num_fewshot = task_meta['num_fewshot']
@@ -179,7 +179,13 @@ def evaluate_example(idx, model, tokenizer, data, device, task_meta, return_prom
     losses, predictions = forward_model(model, input_ids)
 
     # see if the losses/predictions came out correctly
+
+    # for return_prompts_and_losses
     mean_losses = None
+    per_token_losses = None
+    target_tokens = None
+    # end for return_prompts_and_losses
+
     if task_type == 'language_modeling':
         si = start_idxs[0]
         ei = end_idxs[0]
@@ -192,11 +198,16 @@ def evaluate_example(idx, model, tokenizer, data, device, task_meta, return_prom
             for i, (si, ei) in enumerate(zip(start_idxs, end_idxs))]
         pred_idx = mean_losses.index(min(mean_losses)) # argmin
         is_correct = pred_idx == item['gold']
+
+        if return_prompts_and_losses:
+            per_token_losses = [losses[i, si-1:ei-1].tolist() for i, (si, ei) in enumerate(zip(start_idxs, end_idxs))]
+            target_ids = torch.roll(input_ids, shifts=-1, dims=1)
+            target_tokens = [target_ids[i, si-1:ei-1].tolist() for i, (si, ei) in enumerate(zip(start_idxs, end_idxs))]
     else:
         assert False # TODO
 
-    if return_prompts_and_mean_losses:
-        return is_correct, prompts, mean_losses
+    if return_prompts_and_losses:
+        return is_correct, prompts, mean_losses, per_token_losses, target_tokens
     else:
         return is_correct
 
