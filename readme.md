@@ -147,6 +147,9 @@ Add estimating and logging flops / MFU.
 #### Challenge 38
 Train d32.
 
+#### Challenge 39
+Understand types used (float32 vs bfloat16) in various places.
+
 ### Examples of training/validation/metrics data
 
 * [For training tokenizer and base training of model](challenge-08-train-tokenizer/example-data.ipynb)

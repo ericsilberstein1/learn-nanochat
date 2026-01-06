@@ -127,3 +127,46 @@ def log_memory_stats(message, relevant_tensors = {}, indentation = 0):
     for name, tensor in relevant_tensors.items():
         print(f"{' ' * indentation}> {name} - {list(tensor.shape)} - {tensor.dtype} - {tensor.untyped_storage().nbytes() / 1024**2:.3f} MiB")
 
+
+# for challenge-39-understand-types
+# thanks chatgpt
+
+
+def print_param_dtypes(
+    model: torch.nn.Module,
+    *,
+    include_shape: bool = True,
+    include_device: bool = True,
+    include_requires_grad: bool = False,
+    dedupe_shared: bool = True,
+) -> None:
+    """
+    Print parameter name + dtype for a PyTorch model.
+
+    Args:
+        model: nn.Module
+        include_shape: also print tensor shape
+        include_device: also print device
+        include_requires_grad: also print requires_grad
+        dedupe_shared: avoid printing the same underlying Parameter twice
+                     (useful for tied/shared weights).
+    """
+    seen = set()
+
+    for name, p in model.named_parameters(recurse=True):
+        if dedupe_shared:
+            # Use the underlying storage pointer as a stable identity for the tensor data.
+            key = (p.untyped_storage().data_ptr(), p.numel(), str(p.dtype), str(p.device))
+            if key in seen:
+                continue
+            seen.add(key)
+
+        parts = [f"{name}: dtype={p.dtype}"]
+        if include_shape:
+            parts.append(f"shape={tuple(p.shape)}")
+        if include_device:
+            parts.append(f"device={p.device}")
+        if include_requires_grad:
+            parts.append(f"requires_grad={p.requires_grad}")
+
+        print(", ".join(parts))
